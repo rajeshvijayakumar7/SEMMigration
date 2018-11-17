@@ -18,7 +18,7 @@ public class FileSplitLogger {
 			System.out.println(" Exception While writing log : " + e.getMessage());
 		}
 	}
-
+	
 	protected static void initLog(String logPath) {
 		File logFile = new File(logPath);
 		try {

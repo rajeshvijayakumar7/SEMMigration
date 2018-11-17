@@ -9,7 +9,7 @@ public class MigrationFileSplitter {
 	private int start = 0;
 	private int end = 0;
 	private static String message = "";
-	private static String logPath = "/home/rajesh/sample_dir/Test-FileSplit.log";
+	private static String logPath = "";
 
 	private void splitFileByAgents(File file, int numberOfAgents, String splitDirectory) throws Exception {
 		// splitting the Parent file into smaller files based on the number of agents
@@ -40,10 +40,24 @@ public class MigrationFileSplitter {
 	private void createDirectory(File file, String dirName) {
 		File splitDir = getSplitDir(file, dirName);
 		if (!splitDir.exists()) {
-			message = FileUtils.createSplitDirectory(file, dirName);
-			FileSplitLogger.logIt(logPath, message);
+			if (FileUtils.createSplitDirectory(file, dirName)) {
+				message = "Split Directory Successfully Created!";
+				FileSplitLogger.logIt(logPath, message);
+			} else {
+				message = "ERROR! Not able to create a split directory!";
+				FileSplitLogger.logIt(logPath, message);
+			}
 		} else {
-			FileUtils.clearDirectory(splitDir);
+			message = "Split Directory already exists!";
+			FileSplitLogger.logIt(logPath, message);
+
+			if (FileUtils.clearDirectory(splitDir)) {
+				message = "Split Directory Cleared!";
+				FileSplitLogger.logIt(logPath, message);
+			} else {
+				message = "ERROR! Not able to create a CLEAR directory!";
+				FileSplitLogger.logIt(logPath, message);
+			}
 		}
 	}
 
@@ -59,6 +73,13 @@ public class MigrationFileSplitter {
 			FileSplitLogger.logIt(logPath, message);
 		}
 		return lines;
+	}
+
+	private void setLogFileName(File parentFile) {
+		String parentFileWithoutExtension = FileUtils.removeFileExtensions(parentFile.getName());
+		String logFileName = parentFileWithoutExtension + "-FileSplit.log";
+		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), logFileName);
+		logPath = FileUtils.getPathFromArray(pathElements);
 	}
 
 	private String formatFileName(String fileName, int start, int end) {
@@ -138,11 +159,6 @@ public class MigrationFileSplitter {
 		// first argument: path of the parent file <path should be upto the filename>
 		// second argument: number of agents
 
-		FileSplitLogger.initLog(logPath);
-		message = "initialized";
-		FileSplitLogger.logIt(logPath, message);
-
-		MigrationFileSplitter splitter = new MigrationFileSplitter();
 		int numOfAgents = 0;
 		String splitDirectory = "";
 		File file = null;
@@ -150,9 +166,15 @@ public class MigrationFileSplitter {
 		try {
 			if (args != null) {
 				// if (argsArray != null) {
+				MigrationFileSplitter splitter = new MigrationFileSplitter();
 				String[] argsArray = args.split("#", -1);
 				String path = argsArray[0];
 				file = new File(path);
+				splitter.setLogFileName(file);
+				FileSplitLogger.initLog(logPath);
+
+				message = "initialized";
+				FileSplitLogger.logIt(logPath, message);
 
 				try {
 					numOfAgents = Integer.parseInt(argsArray[1]);

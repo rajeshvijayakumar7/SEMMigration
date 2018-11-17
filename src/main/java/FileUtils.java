@@ -1,5 +1,4 @@
 import java.io.File;
-import java.util.List;
 
 public class FileUtils {
 
@@ -20,10 +19,15 @@ public class FileUtils {
 		return fileName;
 	}
 
-	protected static void clearDirectory(File dir) {
+	protected static boolean clearDirectory(File dir) {
+		boolean result = false;
 		for (File file : dir.listFiles())
 			if (!file.isDirectory())
 				file.delete();
+
+		result = true;
+
+		return result;
 	}
 
 	protected static String[] getPathElements(String parentFilePath, String splitFileName) {
@@ -38,7 +42,6 @@ public class FileUtils {
 
 	protected static String getPathFromArray(String[] pathElements) {
 		// building file path from the given array of path elements
-
 		String newPath = "";
 		int lastIndex = pathElements.length - 1;
 		for (int i = 0; i < pathElements.length; i++) {
@@ -61,35 +64,18 @@ public class FileUtils {
 		}
 	}
 
-	protected static boolean moveFilesToDirectory(List<File> writtenFiles, File dir) {
+	protected static boolean createSplitDirectory(File parentFile, String splitDirectory) {
 		boolean result = false;
-
-		for (File file : writtenFiles) {
-			String newPath = dir.getAbsolutePath() + getPathDelimiter() + file.getName();
-			File movingFile = new File(newPath);
-			System.out.println("Moving file.. :" + movingFile.getAbsolutePath());
-			file.renameTo(movingFile);
-			System.out.println("Moving file.. :" + movingFile.getAbsolutePath() + " Completed!");
-		}
-
-		result = true;
-
-		return result;
-	}
-
-	protected static String createSplitDirectory(File parentFile, String splitDirectory) {
-		String logMessage = "Creating split file directory...";
 		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirectory);
 		String newPath = FileUtils.getPathFromArray(pathElements);
-
 		File dir = new File(newPath);
 
 		if (dir.mkdir()) {
-			logMessage = "Split directory created!";
+			result = true;
 		} else {
-			logMessage = "Not able to create split file directory";
+			result = false;
 		}
-		return logMessage;
+		return result;
 	}
 
 }
