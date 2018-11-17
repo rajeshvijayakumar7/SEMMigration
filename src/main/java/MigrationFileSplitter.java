@@ -32,6 +32,9 @@ public class MigrationFileSplitter {
 				+ numberOfAgents;
 		System.out.println(message);
 
+		File splitDir = getSplitDir(file, splitDirectory);
+		FileUtils.clearDirectory(splitDir);
+
 		for (int i = 0; i < numberOfAgents; i++) {
 			start = end + 1;
 			end = end + linesPerFile[i];
@@ -97,11 +100,16 @@ public class MigrationFileSplitter {
 		filesWritten.add(splitFile);
 	}
 
-	public String moveFiles(File parentFile, String splitDirName) {
-		String logMessage = "moving Files...";
+	private File getSplitDir(File parentFile, String splitDirName) {
 		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirName);
 		String splitDirPath = FileUtils.getPathFromArray(pathElements);
 		File splitDir = new File(splitDirPath);
+		return splitDir;
+	}
+
+	public String moveFiles(File parentFile, String splitDirName) {
+		String logMessage = "moving Files...";
+		File splitDir = getSplitDir(parentFile, splitDirName);
 		boolean filesMoved = FileUtils.moveFilesToDirectory(filesWritten, splitDir);
 
 		if (filesMoved) {
