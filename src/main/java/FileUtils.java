@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.List;
 
 public class FileUtils {
 
@@ -8,7 +9,7 @@ public class FileUtils {
 		String newPath = getPathFromArray(pathElements);
 		return newPath;
 	}
-  
+
 	protected static String removeFileExtensions(String fileName) {
 		String[] extensions = { ".xlsx", ".xls", ".csv", ".txt" };
 		for (String extension : extensions) {
@@ -37,6 +38,7 @@ public class FileUtils {
 
 	protected static String getPathFromArray(String[] pathElements) {
 		// building file path from the given array of path elements
+
 		String newPath = "";
 		int lastIndex = pathElements.length - 1;
 		for (int i = 0; i < pathElements.length; i++) {
@@ -58,4 +60,36 @@ public class FileUtils {
 			return File.separator + File.separator;
 		}
 	}
+
+	protected static boolean moveFilesToDirectory(List<File> writtenFiles, File dir) {
+		boolean result = false;
+
+		for (File file : writtenFiles) {
+			String newPath = dir.getAbsolutePath() + getPathDelimiter() + file.getName();
+			File movingFile = new File(newPath);
+			System.out.println("Moving file.. :" + movingFile.getAbsolutePath());
+			file.renameTo(movingFile);
+			System.out.println("Moving file.. :" + movingFile.getAbsolutePath() + " Completed!");
+		}
+
+		result = true;
+
+		return result;
+	}
+
+	protected static String createSplitDirectory(File parentFile, String splitDirectory) {
+		String logMessage = "Creating split file directory...";
+		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirectory);
+		String newPath = FileUtils.getPathFromArray(pathElements);
+
+		File dir = new File(newPath);
+
+		if (dir.mkdir()) {
+			logMessage = "Split directory created!";
+		} else {
+			logMessage = "Not able to create split file directory";
+		}
+		return logMessage;
+	}
+
 }

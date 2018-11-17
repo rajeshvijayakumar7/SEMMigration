@@ -4,25 +4,26 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MigrationFileSplitter {
 	private int start = 0;
 	private int end = 0;
 
 	private static String message = "";
+	private List<File> filesWritten = new ArrayList<>();
 
-	private void splitFileByAgents(String filepath, int numberOfAgents, String splitDirectory) throws Exception {
+	private void splitFileByAgents(File file, int numberOfAgents, String splitDirectory) throws Exception {
 		// splitting the Parent file into smaller files based on the number of agents
 		// and total number of lines in the file
 
-		File fs = new File(filepath);
-
-		message = "Counting number of lines in the file \"" + fs.getName() + "\"";
+		message = "Counting number of lines in the file \"" + file.getName() + "\"";
 		System.out.println(message);
 
-		int numberOfLines = countLines(fs);
+		int numberOfLines = countLines(file);
 
-		message = "Counting over, totally " + numberOfLines + " lines in the file \"" + fs.getName() + "\"";
+		message = "Counting over, totally " + numberOfLines + " lines in the file \"" + file.getName() + "\"";
 		System.out.println(message);
 
 		int[] linesPerFile = split(numberOfLines, numberOfAgents);
@@ -31,30 +32,12 @@ public class MigrationFileSplitter {
 				+ numberOfAgents;
 		System.out.println(message);
 
-		message = createSplitDirectory(fs, splitDirectory);
-		System.out.println(message);
-
 		for (int i = 0; i < numberOfAgents; i++) {
 			start = end + 1;
 			end = end + linesPerFile[i];
-			writeFile(fs, splitDirectory, start, end);
+			writeFile(file, splitDirectory, start, end);
 		}
 
-	}
-
-	private String createSplitDirectory(File parentFile, String splitDirectory) {
-		String logMessage = "Creating split file directory...";
-		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirectory);
-		String newPath = FileUtils.getPathFromArray(pathElements);
-
-		File dir = new File(newPath);
-
-		if (dir.mkdir()) {
-			logMessage = "Split directory created!";
-		} else {
-			logMessage = "Not able to create split file directory";
-		}
-		return logMessage;
 	}
 
 	private int countLines(File file) {
@@ -83,12 +66,10 @@ public class MigrationFileSplitter {
 
 		String parentFileName = parentFile.getName();
 		String formattedFileName = formatFileName(parentFileName, start, end);
-		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirectory);
-		String newPath = FileUtils.getPathFromArray(pathElements);
-		String delimiter = FileUtils.getPathDelimiter();
-		String splitFilePath = newPath+delimiter+formattedFileName;
+		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), formattedFileName);
+		String splitFilePath = FileUtils.getPathFromArray(pathElements);
 		File splitFile = new File(splitFilePath);
-		
+
 		message = "writing \"" + splitFile.getName() + "\" file...";
 		System.out.println(message);
 
@@ -112,6 +93,23 @@ public class MigrationFileSplitter {
 		int totalLinesWritten = ((end - start) + 1);
 		message = totalLinesWritten + " lines written to this file : \"" + splitFile.getName() + "\"";
 		System.out.println(message);
+
+		filesWritten.add(splitFile);
+	}
+
+	public String moveFiles(File parentFile, String splitDirName) {
+		String logMessage = "moving Files...";
+		String[] pathElements = FileUtils.getPathElements(parentFile.getAbsolutePath(), splitDirName);
+		String splitDirPath = FileUtils.getPathFromArray(pathElements);
+		File splitDir = new File(splitDirPath);
+		boolean filesMoved = FileUtils.moveFilesToDirectory(filesWritten, splitDir);
+
+		if (filesMoved) {
+			logMessage = "Files Moved to a Directory Successfully!";
+		} else {
+			logMessage = "Moving Split Files to Directory Failed!";
+		}
+		return logMessage;
 	}
 
 	private int[] split(int totalLines, int numOfAgents) {
@@ -149,15 +147,19 @@ public class MigrationFileSplitter {
 		MigrationFileSplitter splitter = new MigrationFileSplitter();
 		int numOfAgents = 0;
 		String splitDirectory = "";
+		File file = null;
+
 		try {
 			// if (args != null) {
 			if (argsArray != null) {
 				// String[] argsArray = args.split("#", -1);
 				String path = argsArray[0];
+				file = new File(path);
+
 				try {
 					numOfAgents = Integer.parseInt(argsArray[1]);
 					splitDirectory = argsArray[2];
-					splitter.splitFileByAgents(path, numOfAgents, splitDirectory);
+					splitter.splitFileByAgents(file, numOfAgents, splitDirectory);
 				} catch (NumberFormatException ex) {
 					System.out.println("Number of agents should be a number, \"" + argsArray[1]
 							+ "\" is not a number,ERROR \"" + ex.getMessage() + " \"");
@@ -168,6 +170,13 @@ public class MigrationFileSplitter {
 			}
 			message = "File splitting Completed, split into " + numOfAgents + " Files";
 			System.out.println(message);
+
+			message = FileUtils.createSplitDirectory(file, splitDirectory);
+			System.out.println(message);
+
+			message = splitter.moveFiles(file, splitDirectory);
+			System.out.println(message);
+
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			System.out.println(
 					"File-path and number-of-agents should be given as runtime arguments, ERROR \"Arguments Missing!\"");
