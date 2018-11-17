@@ -9,24 +9,25 @@ public class MigrationFileSplitter {
 	private int start = 0;
 	private int end = 0;
 	private static String message = "";
+	private static String logPath = "/home/rajesh/sample_dir/Test-FileSplit.log";
 
 	private void splitFileByAgents(File file, int numberOfAgents, String splitDirectory) throws Exception {
 		// splitting the Parent file into smaller files based on the number of agents
 		// and total number of lines in the file
 
 		message = "Counting number of lines in the file \"" + file.getName() + "\"";
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 
 		int numberOfLines = countLines(file);
 
 		message = "Counting over, totally " + numberOfLines + " lines in the file \"" + file.getName() + "\"";
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 
 		int[] linesPerFile = split(numberOfLines, numberOfAgents);
 
 		message = "Lines are split into " + numberOfAgents + " smaller units based on the number of agents "
 				+ numberOfAgents;
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 		createDirectory(file, splitDirectory);
 
 		for (int i = 0; i < numberOfAgents; i++) {
@@ -40,7 +41,7 @@ public class MigrationFileSplitter {
 		File splitDir = getSplitDir(file, dirName);
 		if (!splitDir.exists()) {
 			message = FileUtils.createSplitDirectory(file, dirName);
-			System.out.println(message);
+			FileSplitLogger.logIt(logPath, message);
 		} else {
 			FileUtils.clearDirectory(splitDir);
 		}
@@ -54,7 +55,8 @@ public class MigrationFileSplitter {
 				lines++;
 			}
 		} catch (IOException e) {
-			System.out.println("Exception in counting lines in file: " + file.getName() + ", Error " + e.getMessage());
+			message = "Exception in counting lines in file: " + file.getName() + ", Error " + e.getMessage();
+			FileSplitLogger.logIt(logPath, message);
 		}
 		return lines;
 	}
@@ -77,7 +79,7 @@ public class MigrationFileSplitter {
 		File splitFile = new File(splitFilePath);
 
 		message = "writing \"" + splitFile.getName() + "\" file...";
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 
 		int linesCount = 0;
 		try (BufferedReader reader = new BufferedReader(new FileReader(parentFile))) {
@@ -92,13 +94,14 @@ public class MigrationFileSplitter {
 				}
 			}
 		} catch (IOException e) {
-			System.out.println("Exception when writing a file: " + splitFile.getName() + ", ERROR Message \""
-					+ e.getMessage() + " \"");
+			message = "Exception when writing a file: " + splitFile.getName() + ", ERROR Message \"" + e.getMessage()
+					+ " \"";
+			FileSplitLogger.logIt(logPath, message);
 		}
 
 		int totalLinesWritten = ((end - start) + 1);
 		message = totalLinesWritten + " lines written to this file : \"" + splitFile.getName() + "\"";
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 	}
 
 	private File getSplitDir(File parentFile, String splitDirName) {
@@ -135,8 +138,9 @@ public class MigrationFileSplitter {
 		// first argument: path of the parent file <path should be upto the filename>
 		// second argument: number of agents
 
+		FileSplitLogger.initLog(logPath);
 		message = "initialized";
-		System.out.println(message);
+		FileSplitLogger.logIt(logPath, message);
 
 		MigrationFileSplitter splitter = new MigrationFileSplitter();
 		int numOfAgents = 0;
@@ -155,21 +159,23 @@ public class MigrationFileSplitter {
 					splitDirectory = argsArray[2];
 					splitter.splitFileByAgents(file, numOfAgents, splitDirectory);
 				} catch (NumberFormatException ex) {
-					System.out.println("Number of agents should be a number, \"" + argsArray[1]
-							+ "\" is not a number,ERROR \"" + ex.getMessage() + " \"");
+					message = "Number of agents should be a number, \"" + argsArray[1] + "\" is not a number,ERROR \""
+							+ ex.getMessage() + " \"";
+					FileSplitLogger.logIt(logPath, message);
 				}
 			} else {
 				message = "File path and Number of agents should be given, ERROR \"Arguments cannot be 'null' \"";
 				throw new Exception(message);
 			}
 			message = "File splitting Completed, split into " + numOfAgents + " Files";
-			System.out.println(message);
+			FileSplitLogger.logIt(logPath, message);
 
 		} catch (ArrayIndexOutOfBoundsException ex) {
-			System.out.println(
-					"File-path and number-of-agents should be given as runtime arguments, ERROR \"Arguments Missing!\"");
+			message = "File-path and number-of-agents should be given as runtime arguments, ERROR \"Arguments Missing!\"";
+			FileSplitLogger.logIt(logPath, message);
 		} catch (Exception ex) {
-			System.out.println("ERROR \"" + ex.getMessage() + "\"");
+			message = "ERROR \"" + ex.getMessage() + "\"";
+			FileSplitLogger.logIt(logPath, message);
 		}
 		return message;
 	}
