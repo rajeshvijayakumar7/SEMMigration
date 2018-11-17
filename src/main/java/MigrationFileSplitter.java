@@ -4,15 +4,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MigrationFileSplitter {
 	private int start = 0;
 	private int end = 0;
-
 	private static String message = "";
-	private List<File> filesWritten = new ArrayList<>();
 
 	private void splitFileByAgents(File file, int numberOfAgents, String splitDirectory) throws Exception {
 		// splitting the Parent file into smaller files based on the number of agents
@@ -103,8 +99,6 @@ public class MigrationFileSplitter {
 		int totalLinesWritten = ((end - start) + 1);
 		message = totalLinesWritten + " lines written to this file : \"" + splitFile.getName() + "\"";
 		System.out.println(message);
-
-		filesWritten.add(splitFile);
 	}
 
 	private File getSplitDir(File parentFile, String splitDirName) {
