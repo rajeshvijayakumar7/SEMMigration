@@ -165,7 +165,6 @@ public class MigrationFileSplitter {
 
 		try {
 			if (args != null) {
-				// if (argsArray != null) {
 				MigrationFileSplitter splitter = new MigrationFileSplitter();
 				String[] argsArray = args.split("#", -1);
 				String path = argsArray[0];
@@ -186,24 +185,19 @@ public class MigrationFileSplitter {
 					FileSplitLogger.logIt(logPath, message);
 				}
 			} else {
-				message = "File path and Number of agents should be given, ERROR \"Arguments cannot be 'null' \"";
+				message = "File path and Number of agents and Migration id should be given, ERROR \"Arguments cannot be 'null' \"";
 				throw new Exception(message);
 			}
 			message = "File splitting Completed, split into " + numOfAgents + " Files";
 			FileSplitLogger.logIt(logPath, message);
 
 		} catch (ArrayIndexOutOfBoundsException ex) {
-			message = "File-path and number-of-agents should be given as runtime arguments, ERROR \"Arguments Missing!\"";
+			message = "File-path and number-of-agents and Migration id should be given as runtime arguments, ERROR \"Arguments Missing!\"";
 			FileSplitLogger.logIt(logPath, message);
 		} catch (Exception ex) {
 			message = "ERROR \"" + ex.getMessage() + "\"";
 			FileSplitLogger.logIt(logPath, message);
 		}
 		return message;
-	}
-
-	public static void main(String[] args) {
-		String params = args[0] + "#" + args[1] + "#" + args[2];
-		splitFile(params);
 	}
 }
