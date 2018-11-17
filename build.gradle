@@ -9,6 +9,10 @@ compileJava {
     targetCompatibility = 1.7
 }
 
+jar {	
+    baseName 'SEMMigFileSplit'
+}
+
 dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
@@ -18,5 +22,5 @@ dependencies {
 repositories {
 
     mavenCentral()
-
+	
 }
